@@ -59,8 +59,12 @@ func NewWithDeviceApp(deviceApp, deviceName string) (Client, error) {
 	if err != nil {
 		return Client{}, err
 	}
-	cli.DeviceApp = deviceApp
-	cli.DeviceName = deviceName
+	if deviceApp != "" {
+		cli.DeviceApp = deviceApp
+	}
+	if deviceName != "" {
+		cli.DeviceName = deviceName
+	}
 	return cli, nil
 }
 
@@ -106,12 +110,11 @@ func (c Client) QueryUser(ctx context.Context, countryCallingCode int, phone str
 // RequestDeviceRegistration begins a new device registration for an Authy User account,
 // via the nominated mechanism.
 func (c Client) RequestDeviceRegistration(ctx context.Context, userID uint64, via ViaMethod) (StartDeviceRegistrationResponse, error) {
-	hostname, _ := os.Hostname()
 	form := url.Values{}
 	form.Set("api_key", c.APIKey)
 	form.Set("via", string(via))
-	form.Set("device_app", "Authy client for go")
-	form.Set("device_name", fmt.Sprintf("Authy client for go on %s", hostname))
+	form.Set("device_app", c.DeviceApp)
+	form.Set("device_name", c.DeviceName)
 	form.Set("signature", hex.EncodeToString(c.nonce))
 
 	var resp StartDeviceRegistrationResponse
@@ -137,8 +140,8 @@ func (c Client) CompleteDeviceRegistration(ctx context.Context, userID uint64, p
 	form := url.Values{}
 	form.Set("api_key", c.APIKey)
 	form.Set("pin", pin)
-	form.Set("device_app", "authy")
-
+	form.Set("device_app", c.DeviceApp)
+	form.Set("device_name", c.DeviceName)
 	var resp CompleteDeviceRegistrationResponse
 	return resp, c.doRequest(ctx, http.MethodPost,
 		fmt.Sprintf("users/%d/devices/registration/complete", userID), strings.NewReader(form.Encode()), &resp)

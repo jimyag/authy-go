@@ -36,7 +36,11 @@ type Client struct {
 }
 
 func New() (*Client, error) {
-	authyCli, err := authy.New()
+	hostname, err := os.Hostname()
+	if err != nil {
+		return nil, fmt.Errorf("could not get hostname: %w", err)
+	}
+	authyCli, err := authy.NewWithDeviceApp("authy-cli", fmt.Sprintf("authy-cli on %s", hostname))
 	if err != nil {
 		return nil, err
 	}

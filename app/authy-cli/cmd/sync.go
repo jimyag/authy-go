@@ -52,7 +52,7 @@ func syncRun(cmd *cobra.Command, args []string) {
 		client.cfg.UserID = uint64(authyId)
 	}
 
-	if client.cfg.Empty() && !syncForce {
+	if client.cfg.Empty() || syncForce {
 		regStart, err := client.authyCli.RequestDeviceRegistration(context.Background(), client.cfg.UserID, authy.ViaMethodPush)
 		if err != nil {
 			log.Fatalln("Failed to request device registration ,", err)
