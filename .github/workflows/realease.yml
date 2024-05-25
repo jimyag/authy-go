@@ -32,7 +32,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
-          build_command: "make release"
-          binary_name: "parquet-tools"
-          extra_files: parquet-tools
+          build_command: "make"
+          binary_name: "authy-cli"
+          extra_files: authy-cli
 
