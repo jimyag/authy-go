@@ -3,7 +3,6 @@ package cmd
 import (
 	"bufio"
 	"context"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -24,26 +23,22 @@ var initCmd = &cobra.Command{
 
 func initRun(cmd *cobra.Command, args []string) {
 	sc := bufio.NewScanner(os.Stdin)
-	fmt.Print("\nWhat is your Authy Id ? (digits only): ")
+	log.Printf("\nWhat is your Authy Id ? (digits only): ")
 	if !sc.Scan() {
-		fmt.Println("Please provide an authyId code")
-		return
+		log.Fatalln("Please provide an authyId code ")
 	}
 	authyId, err := strconv.Atoi(strings.TrimSpace(sc.Text()))
 	if err != nil {
-		fmt.Println("Please provide an authyId code")
-		return
+		log.Fatalln("Please provide an authyId code")
 	}
 	client.cfg.UserID = uint64(authyId)
 	regStart, err := client.authyCli.RequestDeviceRegistration(context.Background(), client.cfg.UserID, authy.ViaMethodPush)
 	if err != nil {
-		log.Fatalf("Failed to request device registration :%s\n", err)
-		return
+		log.Fatalln("Failed to request device registration ,", err)
 	}
 
 	if !regStart.Success {
-		_, _ = fmt.Printf("authy did not accept the device registration request: %+v\n", regStart)
-		return
+		log.Fatalln("authy did not accept the device registration request:", regStart)
 	}
 
 	// Poll for a while until the user has responded to the device registration
@@ -51,23 +46,20 @@ func initRun(cmd *cobra.Command, args []string) {
 	timeout := time.Now().Add(5 * time.Minute)
 	for {
 		if timeout.Before(time.Now()) {
-			fmt.Println("gave up waiting for user to respond to Authy device registration request")
-			return
+			log.Fatalln("gave up waiting for user to respond to Authy device registration request")
 		}
 
-		_, _ = fmt.Printf("Checking device registration status (%s until we give up)\n", time.Until(timeout).Truncate(time.Second))
+		log.Printf("Checking device registration status (%s until we give up)\n", time.Until(timeout).Truncate(time.Second))
 		regStatus, err := client.authyCli.CheckDeviceRegistration(context.Background(), client.cfg.UserID, regStart.RequestID)
 		if err != nil {
-			_, _ = fmt.Printf("Failed to check device registration status err %v\n", err)
-			return
+			log.Fatalln("Failed to check device registration status ,", err)
 		}
 
 		if regStatus.Status == authy.RegistrationStatusAccepted {
 			regPIN = regStatus.PIN
 			break
 		} else if regStatus.Status != authy.RegistrationStatusPending {
-			_, _ = fmt.Printf("invalid status while waiting for device registration: %s\n", regStatus.Status)
-			return
+			log.Fatalln("invalid status while waiting for device registration , status:", regStatus.Status)
 		}
 		time.Sleep(5 * time.Second)
 	}
@@ -75,24 +67,19 @@ func initRun(cmd *cobra.Command, args []string) {
 	// We have the registration PIN, complete the registration
 	regComplete, err := client.authyCli.CompleteDeviceRegistration(context.Background(), client.cfg.UserID, regPIN)
 	if err != nil {
-		_, _ = fmt.Printf("Failed to complete device registration, err %v\n", err)
-		return
+		log.Fatalln("Failed to complete device registration,", err)
 	}
 
 	if regComplete.Device.SecretSeed == "" {
-		_, _ = fmt.Println("something went wrong completing the device registration")
-		return
+		log.Fatalln("something went wrong completing the device registration")
 	}
 
-	_, _ = fmt.Printf("Please provide your Authy TOTP backup password: ")
+	log.Println("Please provide your Authy TOTP backup password: ")
 	pp, err := term.ReadPassword(int(os.Stdin.Fd()))
 	if err != nil {
-		fmt.Println("Failed to read the password")
-		return
+		log.Fatalln("Failed to read the password")
 	}
-	fmt.Println()
 	client.cfg.BackupPassword = strings.TrimSpace(string(pp))
-
 	client.cfg.UserID = regComplete.AuthyID
 	client.cfg.Seed = regComplete.Device.SecretSeed
 	client.cfg.DeviceID = regComplete.Device.ID
@@ -100,23 +87,23 @@ func initRun(cmd *cobra.Command, args []string) {
 
 	respApps, err := client.authyCli.QueryAuthenticatorApps(context.Background(), client.cfg.UserID, client.cfg.DeviceID, client.cfg.Seed)
 	if err != nil {
-		log.Fatalf("Could not fetch authenticator apps: %v\n", err)
+		log.Fatalln("Could not fetch authenticator apps ,", err)
 	}
 	if !respApps.Success {
-		log.Fatalf("Failed to fetch authenticator apps: %+v\n", respApps)
+		log.Fatalln("Failed to fetch authenticator apps ,", respApps)
 	}
 
 	// Fetch the actual tokens now
 	tokens, err := client.authyCli.QueryAuthenticatorTokens(context.Background(), client.cfg.UserID, client.cfg.DeviceID, client.cfg.Seed)
 	if err != nil {
-		log.Fatalf("Could not fetch authenticator tokens: %v\n", err)
+		log.Fatalln("Could not fetch authenticator tokens ,", err)
 	}
 	if !tokens.Success {
-		log.Fatalf("Failed to fetch authenticator tokens: %+v", tokens)
+		log.Fatalln("Failed to fetch authenticator tokens ,", tokens)
 	}
 
 	client.cfg.AuthenticatorTokenS = tokens.AuthenticatorTokens
 	if err = client.cfg.Save(client.cfgFile); err != nil {
-		log.Fatalf("Failed to save config: %v\n", err)
+		log.Fatalln("Failed to save config, ", err)
 	}
 }

@@ -10,6 +10,8 @@ It also somewhat documents Authy's protocol/encryption, since public materials o
 
 Please be careful. You can get your Authy account suspended very easily by using this package. It does not hide itself or mimic the official clients.
 
+This tool draws inspiration from [alexzorin/authy](https://github.com/alexzorin/authy), combining their strengths and introducing additional enhancements.
+
 ## authy-cli
 
 This program will enroll itself as an additional device on your Authy account and export all of your TOTP tokens in [Key URI Format](https://github.com/google/google-authenticator/wiki/Key-Uri-Format).
@@ -50,7 +52,7 @@ The program will prompt you for:
 
 4. Save Authentication Credential:
 
-- If the registration is successful, the program will save its authentication credential (a random value) to $HOME/authy-go.json for future use.
+- If the registration is successful, the program will save its authentication credential (a random value) to $HOME/.config/authy-cli/authy-go.json for future use.
 - Make sure to delete this file and de-register the device after you're finished.
 
 5. Fetch and Decrypt TOTP Database:
@@ -66,6 +68,13 @@ Example output:
 ```bash
 otpauth://totp/Issuer:AccountName?secret=BASE32SECRET&issuer=Issuer
 ```
+
+### commands
+
+- init : Initialize Authy ID and Backup Password, and request device registration. Must be run before any other command
+- export : Export all TOTP tokens in URI format
+- list : List all TOTP tokens
+- get : Get TOTP token by UniqueID
 
 ### Important Notes
 

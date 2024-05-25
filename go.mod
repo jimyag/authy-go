@@ -3,6 +3,7 @@ module github.com/jimyag/authy-go
 go 1.18
 
 require (
+	github.com/jimyag/version-go v0.1.1
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.23.0
 	golang.org/x/term v0.20.0

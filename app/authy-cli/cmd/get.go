@@ -37,6 +37,9 @@ func getRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatalf("Failed to decrypt token %s: %v", retToken.Description(), err)
 	}
-	fmt.Println(authy.GenerateTOTP([]byte(decrypted), time.Now(), retToken.Digits, 30))
-
+	totp, err := authy.GenerateTOTP([]byte(decrypted), time.Now(), retToken.Digits, 30)
+	if err != nil {
+		log.Fatalf("Failed generate TOTP %s", err)
+	}
+	fmt.Println(totp)
 }

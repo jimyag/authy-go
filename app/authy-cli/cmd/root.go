@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jimyag/version-go"
 	"github.com/spf13/cobra"
 
 	"github.com/jimyag/authy-go"
@@ -18,6 +19,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_ = cmd.Help()
 	},
+	Version: version.Version(),
 }
 
 var client *Client
