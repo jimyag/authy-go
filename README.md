@@ -71,7 +71,7 @@ otpauth://totp/Issuer:AccountName?secret=BASE32SECRET&issuer=Issuer
 
 ### commands
 
-- init : Initialize Authy ID and Backup Password, and request device registration. Must be run before any other command
+- sync : Sync your Authy ID and Backup Password, and request device registration. Must be run before any other command
 - export : Export all TOTP tokens in URI format
 - list : List all TOTP tokens
 - get : Get TOTP token by UniqueID

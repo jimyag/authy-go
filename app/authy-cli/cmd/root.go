@@ -67,7 +67,7 @@ func New() (*Client, error) {
 func init() {
 	rootCmd.AddCommand(exportCmd)
 	rootCmd.AddCommand(getCmd)
-	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(listCmd)
 	var err error
 	client, err = New()

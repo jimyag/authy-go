@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -16,12 +17,13 @@ var exportCmd = &cobra.Command{
 }
 
 func exportRun(cmd *cobra.Command, args []string) {
+	if _, err := os.Stat(client.cfgFile); os.IsNotExist(err) {
+		syncCmd.Run(cmd, args)
+	}
 	if err := client.cfg.Load(client.cfgFile); err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
-	if client.cfg.Empty() {
-		log.Fatal("Please run authy-cli init first")
-	}
+
 	for _, token := range client.cfg.AuthenticatorTokenS {
 		decrypted, err := token.Decrypt(client.cfg.BackupPassword)
 		if err != nil {
