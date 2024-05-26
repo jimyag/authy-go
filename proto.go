@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 var ErrNoPrivateKey = errors.New("this response does not contain a device private key")
@@ -205,6 +206,21 @@ func (t AuthenticatorToken) Description() string {
 		return t.Name
 	}
 	return "Token-" + t.UniqueID
+}
+
+// TOTP returns the base32-encoded TOTP token backing this app.
+func (t AuthenticatorToken) TOTP(passphrase string, tm time.Time) (string, error) {
+	decrypted, err := t.Decrypt(passphrase)
+	if err != nil {
+		return "", fmt.Errorf("failed to decrypt token %s: %v", t.Description(), err)
+	}
+	decode, err := base32.StdEncoding.DecodeString(decrypted)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode token %s: %v", t.Description(), err)
+	}
+
+	totp, err := generateTOTP([]byte(decode), tm, t.Digits, 30)
+	return totp, err
 }
 
 // AuthenticatorAppsResponse is the response from:

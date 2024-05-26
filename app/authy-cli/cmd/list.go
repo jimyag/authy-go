@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-
-	"github.com/jimyag/authy-go"
 )
 
 var listCmd = &cobra.Command{
@@ -26,13 +24,9 @@ func listRun(cmd *cobra.Command, args []string) {
 	}
 
 	for _, token := range client.cfg.AuthenticatorTokenS {
-		decrypted, err := token.Decrypt(client.cfg.BackupPassword)
+		totp, err := token.TOTP(client.cfg.BackupPassword, time.Now())
 		if err != nil {
-			log.Fatalf("Failed to decrypt token %s: %v", token.Description(), err)
-		}
-		totp, err := authy.GenerateTOTP([]byte(decrypted), time.Now(), token.Digits, 30)
-		if err != nil {
-			log.Fatalf("Failed generate TOTP %s", err)
+			log.Fatalf("Failed to generate TOTP: %v", err)
 		}
 		_, _ = fmt.Printf("%s: %s \t:%s\n", token.UniqueID, totp, token.Description())
 	}

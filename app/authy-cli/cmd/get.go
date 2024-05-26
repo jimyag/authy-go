@@ -35,13 +35,9 @@ func getRun(cmd *cobra.Command, args []string) {
 	if retToken.UniqueID == "" {
 		log.Fatal("Token not found")
 	}
-	decrypted, err := retToken.Decrypt(client.cfg.BackupPassword)
+	totp, err := retToken.TOTP(client.cfg.BackupPassword, time.Now())
 	if err != nil {
-		log.Fatalf("Failed to decrypt token %s: %v", retToken.Description(), err)
-	}
-	totp, err := authy.GenerateTOTP([]byte(decrypted), time.Now(), retToken.Digits, 30)
-	if err != nil {
-		log.Fatalf("Failed generate TOTP %s", err)
+		log.Fatalf("Failed to generate TOTP: %v", err)
 	}
 	fmt.Println(totp)
 }

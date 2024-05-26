@@ -50,7 +50,7 @@ func generateTOTPCodes(hexSecret string, digits int, timeStep int64, decodeBase3
 	tDelta := time.Second * time.Duration(timeStep)
 
 	for i := range codes {
-		code, err := GenerateTOTP(decoded, t, digits, timeStep)
+		code, err := generateTOTP(decoded, t, digits, timeStep)
 		if err != nil {
 			return codes, err
 		}
@@ -62,7 +62,7 @@ func generateTOTPCodes(hexSecret string, digits int, timeStep int64, decodeBase3
 }
 
 // Largely copied from https://github.com/pquerna/otp/blob/master/hotp/hotp.go
-func GenerateTOTP(secret []byte, t time.Time, digits int, timeStep int64) (string, error) {
+func generateTOTP(secret []byte, t time.Time, digits int, timeStep int64) (string, error) {
 	t1 := t.Unix()
 	C := t1 / timeStep
 
